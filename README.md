@@ -1,156 +1,164 @@
-# Customer Service Agent
+# Lawn Shopper Message Triage + Draft Reply Agent
 
-An AI-powered customer service agent you can customize for your business. It answers FAQs, shares business hours and policies, and escalates complex issues to your team.
+An internal tool that reads incoming customer messages, classifies whether they need a response, and drafts replies in Lawn Shopper's voice — all for human review. Nothing is sent automatically.
 
-## Features
+## What this does
 
-- **Configurable knowledge base** — Edit `config/business.yaml` with your business name, hours, products, policies, and FAQs
-- **AI agent with tools** — Uses OpenAI to understand questions and look up the right information
-- **Human escalation** — Creates support tickets when customers need a real person
-- **Chat widget UI** — Clean, responsive interface ready to embed or deploy
+For each incoming message, the agent:
 
-## Quick Start
+1. Reads the message (from a local sample file in v1)
+2. Identifies the sender, if possible
+3. Summarizes what the customer is asking or saying
+4. Classifies as **Needs Response** or **Does Not Need Response**
+5. Assigns a category and urgency level
+6. Drafts a reply when a response is needed
+7. Explains its reasoning
+8. Saves results to `data/output/triage_results.json` and `.csv`
 
-### Prerequisites
+**First version uses mock/sample data only.** No Gmail or SMS integration yet.
 
-- Python 3.11+
-- Node.js 18+
-- An [OpenAI API key](https://platform.openai.com/api-keys)
+## Folder structure
 
-### 1. Configure your business
-
-Edit `config/business.yaml` with your business details:
-
-```yaml
-business:
-  name: "Acme Coffee Co."
-  description: "Specialty coffee roasters since 2010."
-  email: "hello@acmecoffee.com"
-  # ...
+```
+customer-service/
+├── agent/                    # Python triage agent
+│   ├── main.py               # CLI entry point — run this
+│   ├── triage.py             # Classification + draft reply logic
+│   ├── models.py             # Input/output data shapes
+│   ├── config.py             # Settings and business config loader
+│   └── output_writer.py      # Saves JSON and CSV results
+├── config/
+│   └── lawn_shopper.yaml     # Business context, tone, safety rules
+├── data/
+│   ├── sample_messages.json  # Mock incoming emails for testing
+│   └── output/               # Generated triage results (gitignored)
+├── requirements.txt
+├── .env.example
+└── README.md
 ```
 
-### 2. Set up environment
+## Quick start
+
+### 1. Install dependencies
 
 ```bash
-cp .env.example .env
-# Add your OpenAI API key to .env
-```
-
-### 3. Start the backend
-
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+python3 -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
 ```
 
-### 4. Start the frontend
-
-In a new terminal:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173) to chat with your agent.
-
-### Docker
+### 2. Set your OpenAI API key
 
 ```bash
 cp .env.example .env
-# Add your OpenAI API key
-docker compose up
+# Edit .env and add your OPENAI_API_KEY
 ```
 
-## How It Works
+Without an API key, the agent uses built-in rule-based classification so you can test the full pipeline locally. Add your key for AI-powered triage and draft replies.
 
-```
-Customer → Chat UI → FastAPI → OpenAI Agent → Tools (FAQs, hours, policies, tickets)
-```
+### 3. Run the agent
 
-The agent has access to these tools:
-
-| Tool | Purpose |
-|------|---------|
-| `search_faqs` | Find answers in your FAQ list |
-| `get_business_hours` | Return operating hours |
-| `get_products` | List products/services and pricing |
-| `get_policies` | Shipping, returns, refunds, warranty |
-| `get_contact_info` | Email, phone, website |
-| `create_support_ticket` | Escalate to a human agent |
-
-## Customization
-
-### Add more FAQs
-
-```yaml
-faqs:
-  - question: "Do you offer gift cards?"
-    answer: "Yes! Gift cards are available in $25, $50, and $100 denominations."
+```bash
+python -m agent.main
 ```
 
-### Change the agent's tone
+This reads `data/sample_messages.json`, triages each message, prints a summary, and saves output to `data/output/`.
 
-```yaml
-agent:
-  tone: "warm, casual, and enthusiastic"
-  greeting: "Hey there! Welcome to {business_name}. What can I help you with?"
+### Optional flags
+
+```bash
+python -m agent.main --input data/sample_messages.json --output data/output
 ```
 
-### Use a different model
+## Sample output
 
-Set `OPENAI_MODEL` in `.env` (e.g. `gpt-4o` for higher quality).
-
-## API
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Health check |
-| `/api/business` | GET | Business name and greeting |
-| `/api/chat` | POST | Send a message and get a reply |
-
-### Chat request example
+Each message produces structured output like this:
 
 ```json
 {
-  "message": "What are your return policies?",
-  "conversation_id": "optional-uuid",
-  "history": [
-    { "role": "user", "content": "Hi" },
-    { "role": "assistant", "content": "Hello! How can I help?" }
-  ]
+  "message_id": "msg-001",
+  "sender": "Sarah Mitchell",
+  "classification": "Needs Response",
+  "category": "Scheduling",
+  "urgency": "Medium",
+  "summary": "Customer is asking whether mowing is still happening this week due to rain.",
+  "reasoning": "The customer asked a direct scheduling question and needs a reply.",
+  "missing_info": [],
+  "draft_reply": "Thanks — we're watching the weather and crew schedule now. If anything shifts, we'll let you know. Otherwise, we're still planning to get the service completed this week.",
+  "recommended_human_action": "Review and send reply."
 }
 ```
 
-## Next Steps
+Full batch results are saved to:
 
-- **Embed the widget** on your website by building the frontend and serving it from your domain
-- **Persist tickets** by connecting `create_support_ticket` to your helpdesk (Zendesk, Freshdesk, email)
-- **Add order lookup** by integrating with your e-commerce platform's API
-- **Deploy** to Railway, Render, Fly.io, or any cloud provider
+- `data/output/triage_results.json` — complete structured output
+- `data/output/triage_results.csv` — easy to scan in a spreadsheet
 
-## Project Structure
+## Sample messages included
 
-```
-├── backend/
-│   ├── app/
-│   │   ├── agent.py      # AI agent logic
-│   │   ├── tools.py      # Tool definitions and handlers
-│   │   ├── main.py       # FastAPI routes
-│   │   └── config.py     # Settings and business config loader
-│   └── requirements.txt
-├── frontend/
-│   └── src/
-│       ├── ChatWidget.jsx
-│       └── App.jsx
-├── config/
-│   └── business.yaml     # Your business knowledge base
-└── docker-compose.yml
-```
+The mock file covers common Lawn Shopper scenarios:
+
+| ID | Scenario |
+|----|----------|
+| msg-001 | Scheduling question (rain/week) |
+| msg-002 | Thank-you with no ask |
+| msg-003 | Missed service / complaint |
+| msg-004 | New quote request |
+| msg-005 | Auto-reply / out of office |
+| msg-006 | Pause service request |
+| msg-007 | Spam / solicitation |
+| msg-008 | Photos received for project |
+| msg-009 | Billing / double charge |
+| msg-010 | Delivery failure / bounce |
+| msg-011 | Crew arrival timing (same-day) |
+| msg-012 | New customer inquiry |
+
+## Classification rules
+
+**Needs Response** — questions, quotes, scheduling, issues, changes, billing, photos, complaints, follow-ups, ambiguous messages. When uncertain, defaults to Needs Response.
+
+**Does Not Need Response** — simple thank-yous, auto-replies, bounces, spam, system notifications, FYI messages with no action needed.
+
+See `config/lawn_shopper.yaml` for full business context, tone guidance, and safety rules.
+
+## Lawn Shopper voice
+
+Drafts should sound like a responsive local operator — practical, direct, and helpful. Not corporate, not salesy.
+
+Good: *"Thanks — we can take a look. Please send over your address and a couple photos of the area, and we'll let you know the best next step."*
+
+Avoid: *"Dear valued customer, we sincerely apologize for any inconvenience..."*
+
+## Safety
+
+The agent will **not**:
+
+- Send emails or texts automatically
+- Delete or archive messages
+- Promise specific dates or quote prices without human approval
+- Admit fault or offer refunds autonomously
+
+All replies are drafts for human review.
+
+## Future scope
+
+Planned expansions (not in v1):
+
+- Gmail inbox monitoring and draft creation
+- SMS ingestion via Twilio
+- Daily digest of messages needing response
+- High-priority Slack/email alerts
+- Customer lookup from CRM
+- Crew status lookup before drafting
+- Tone matching from prior sent emails
+
+## How the code works
+
+1. **`agent/main.py`** — loads messages from JSON, calls the triage logic, saves output.
+2. **`agent/triage.py`** — sends each message to OpenAI with Lawn Shopper's rules and tone. Returns structured JSON.
+3. **`agent/models.py`** — defines the shape of incoming messages and triage results.
+4. **`agent/output_writer.py`** — writes results to JSON and CSV files.
+5. **`config/lawn_shopper.yaml`** — business context the model uses for classification and tone.
 
 ## License
 
