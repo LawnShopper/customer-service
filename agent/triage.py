@@ -14,6 +14,7 @@ from pydantic import ValidationError
 from agent.config import get_settings, load_business_config
 from agent.heuristics import triage_with_rules
 from agent.models import CATEGORIES, IncomingMessage, TriageResult
+from agent.tone_examples import load_tone_examples
 
 
 def build_system_prompt() -> str:
@@ -24,6 +25,14 @@ def build_system_prompt() -> str:
     safety = config.get("safety_rules", [])
 
     good_examples = "\n".join(f'- "{line}"' for line in tone.get("good_examples", []))
+    scanned_examples = load_tone_examples()
+    if scanned_examples:
+        scanned_block = "\n".join(f'- "{line}"' for line in scanned_examples[:8])
+        good_examples = (
+            f"{good_examples}\n\nReal sent-email examples from your outbox:\n{scanned_block}"
+            if good_examples
+            else f"Real sent-email examples from your outbox:\n{scanned_block}"
+        )
     avoid = "\n".join(f"- {line}" for line in tone.get("avoid", []))
     safety_rules = "\n".join(f"- {rule}" for rule in safety)
 

@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     sample_messages_path: str = "data/sample_messages.json"
     output_dir: str = "data/output"
     business_config_path: str = "config/lawn_shopper.yaml"
+    gmail_credentials_path: str = "credentials/google_credentials.json"
+    gmail_token_path: str = "data/gmail_token.json"
+    tone_examples_path: str = "data/tone_examples.json"
 
 
 @lru_cache

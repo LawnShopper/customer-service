@@ -2,7 +2,10 @@
 CLI entry point for the Lawn Shopper triage agent.
 
 Run from the project root:
-    python -m agent.main
+    python -m agent.main                         # Triage sample messages
+    python -m agent.gmail auth                   # Connect Gmail (one-time)
+    python -m agent.gmail inbox                  # Triage live inbox
+    python -m agent.gmail scan-outbox            # Learn tone from sent mail
 
 Optional flags:
     --input path/to/messages.json

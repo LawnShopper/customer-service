@@ -6,7 +6,7 @@ An internal tool that reads incoming customer messages, classifies whether they 
 
 For each incoming message, the agent:
 
-1. Reads the message (from a local sample file in v1)
+1. Reads the message (from sample file or live Gmail inbox)
 2. Identifies the sender, if possible
 3. Summarizes what the customer is asking or saying
 4. Classifies as **Needs Response** or **Does Not Need Response**
@@ -15,7 +15,7 @@ For each incoming message, the agent:
 7. Explains its reasoning
 8. Saves results to `data/output/triage_results.json` and `.csv`
 
-**First version uses mock/sample data only.** No Gmail or SMS integration yet.
+**Supports mock sample data and live Gmail inbox monitoring.** SMS not integrated yet.
 
 ## Folder structure
 
@@ -26,7 +26,13 @@ customer-service/
 │   ├── triage.py             # Classification + draft reply logic
 │   ├── models.py             # Input/output data shapes
 │   ├── config.py             # Settings and business config loader
+│   ├── gmail_client.py       # Gmail API (read-only)
+│   ├── gmail_cli.py          # Gmail CLI commands
+│   ├── tone_examples.py      # Outbox tone example loader
 │   └── output_writer.py      # Saves JSON and CSV results
+├── credentials/              # Google OAuth credentials (gitignored)
+├── docs/
+│   └── GMAIL_SETUP.md        # Gmail connection guide
 ├── config/
 │   └── lawn_shopper.yaml     # Business context, tone, safety rules
 ├── data/
@@ -56,7 +62,7 @@ cp .env.example .env
 
 Without an API key, the agent uses built-in rule-based classification so you can test the full pipeline locally. Add your key for AI-powered triage and draft replies.
 
-### 3. Run the agent
+### 3. Run with sample data
 
 ```bash
 python -m agent.main
@@ -64,7 +70,24 @@ python -m agent.main
 
 This reads `data/sample_messages.json`, triages each message, prints a summary, and saves output to `data/output/`.
 
-### Optional flags
+### 4. Connect Gmail (optional)
+
+See **[docs/GMAIL_SETUP.md](docs/GMAIL_SETUP.md)** for Google Cloud setup steps.
+
+```bash
+python -m agent.gmail auth            # One-time: connect your Gmail account
+python -m agent.gmail scan-outbox     # Learn your tone from sent mail
+python -m agent.gmail inbox           # Triage unread inbox messages
+```
+
+Inbox options:
+
+```bash
+python -m agent.gmail inbox --all           # Include read messages
+python -m agent.gmail inbox --max 50 --days 14
+```
+
+### Optional flags (sample mode)
 
 ```bash
 python -m agent.main --input data/sample_messages.json --output data/output
@@ -142,15 +165,15 @@ All replies are drafts for human review.
 
 ## Future scope
 
-Planned expansions (not in v1):
+Planned expansions:
 
-- Gmail inbox monitoring and draft creation
+- Gmail draft creation (human-approved sends)
 - SMS ingestion via Twilio
 - Daily digest of messages needing response
 - High-priority Slack/email alerts
 - Customer lookup from CRM
 - Crew status lookup before drafting
-- Tone matching from prior sent emails
+- Tone matching from prior sent emails ✅ (via `scan-outbox`)
 
 ## How the code works
 

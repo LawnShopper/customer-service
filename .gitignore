@@ -11,3 +11,6 @@ dist/
 .DS_Store
 *.log
 data/output/
+data/gmail_token.json
+data/tone_examples.json
+credentials/*.json
