@@ -1,0 +1,122 @@
+[
+  {
+    "id": "msg-001",
+    "channel": "email",
+    "from_name": "Sarah Mitchell",
+    "from_email": "sarah.mitchell@gmail.com",
+    "subject": "Mowing this week?",
+    "body": "Hi — with all the rain this week, is mowing still happening at our place on Maple Street in Northbrook? Just want to make sure we're still on the schedule.",
+    "received_at": "2026-06-25T08:14:00-05:00",
+    "thread_context": ""
+  },
+  {
+    "id": "msg-002",
+    "channel": "email",
+    "from_name": "Tom Brennan",
+    "from_email": "tbrennan@yahoo.com",
+    "subject": "Re: Spring cleanup quote",
+    "body": "Thanks, that all sounds good. Appreciate the quick turnaround.",
+    "received_at": "2026-06-25T09:02:00-05:00",
+    "thread_context": "You sent Tom a spring cleanup quote yesterday for $385. He asked a few clarifying questions and you answered them."
+  },
+  {
+    "id": "msg-003",
+    "channel": "email",
+    "from_name": "Jennifer Wu",
+    "from_email": "jwu@outlook.com",
+    "subject": "Crew missed us today",
+    "body": "Our lawn was supposed to be mowed today and nobody showed up. This is the second time this month. What's going on?",
+    "received_at": "2026-06-25T11:30:00-05:00",
+    "thread_context": "Jennifer is a weekly mowing customer in Glenview."
+  },
+  {
+    "id": "msg-004",
+    "channel": "email",
+    "from_name": "Mike O'Connor",
+    "from_email": "moconnor@gmail.com",
+    "subject": "Mulch and bed edging",
+    "body": "We're in Highland Park and looking to refresh the front beds with mulch and some light edging. Can you take a look and give us a quote? I can send photos if helpful.",
+    "received_at": "2026-06-25T12:45:00-05:00",
+    "thread_context": ""
+  },
+  {
+    "id": "msg-005",
+    "channel": "email",
+    "from_name": "Auto-Reply",
+    "from_email": "noreply@company.com",
+    "subject": "Out of office",
+    "body": "I am currently out of the office with limited access to email. I will respond when I return on July 7.",
+    "received_at": "2026-06-25T13:00:00-05:00",
+    "thread_context": ""
+  },
+  {
+    "id": "msg-006",
+    "channel": "email",
+    "from_name": "Lisa Park",
+    "from_email": "lisapark@gmail.com",
+    "subject": "Pause service for July",
+    "body": "Hi — we're traveling most of July. Can we pause mowing for the month and pick back up in August?",
+    "received_at": "2026-06-25T14:10:00-05:00",
+    "thread_context": "Lisa is an existing weekly mowing customer in Evanston."
+  },
+  {
+    "id": "msg-007",
+    "channel": "email",
+    "from_name": "GreenPro Marketing",
+    "from_email": "sales@greenpro-marketing.net",
+    "subject": "Grow your lawn care business!",
+    "body": "We help lawn care companies get 3x more leads with our proven SEO package. Book a free demo today!",
+    "received_at": "2026-06-25T15:22:00-05:00",
+    "thread_context": ""
+  },
+  {
+    "id": "msg-008",
+    "channel": "email",
+    "from_name": "David Klein",
+    "from_email": "dklein@gmail.com",
+    "subject": "Photos of backyard project",
+    "body": "Here are a few photos of the backyard area we talked about. Let me know what you think and if this is something you can help with this fall.",
+    "received_at": "2026-06-25T16:05:00-05:00",
+    "thread_context": "David asked last week about a fall cleanup and some trimming along the fence line."
+  },
+  {
+    "id": "msg-009",
+    "channel": "email",
+    "from_name": "Rachel Stein",
+    "from_email": "rstein@gmail.com",
+    "subject": "Billing question",
+    "body": "I was charged twice this month on my card for mowing. Can someone take a look and let me know what's going on?",
+    "received_at": "2026-06-25T17:40:00-05:00",
+    "thread_context": ""
+  },
+  {
+    "id": "msg-010",
+    "channel": "email",
+    "from_name": "Mail Delivery Subsystem",
+    "from_email": "mailer-daemon@googlemail.com",
+    "subject": "Delivery Status Notification (Failure)",
+    "body": "Your message wasn't delivered because the address couldn't be found.",
+    "received_at": "2026-06-25T18:00:00-05:00",
+    "thread_context": ""
+  },
+  {
+    "id": "msg-011",
+    "channel": "email",
+    "from_name": "Chris Alvarez",
+    "from_email": "calvarez@gmail.com",
+    "subject": "What time is the crew coming tomorrow?",
+    "body": "We have a landscaper coming for pavers tomorrow morning so I need to know roughly when your crew will be here for mowing. Can you check?",
+    "received_at": "2026-06-25T18:30:00-05:00",
+    "thread_context": "Chris is a weekly customer in Wilmette. Mowing is scheduled for tomorrow."
+  },
+  {
+    "id": "msg-012",
+    "channel": "email",
+    "from_name": "Amanda Foster",
+    "from_email": "afoster@gmail.com",
+    "subject": "Interested in weekly mowing",
+    "body": "Hi — we just moved to Deerfield and are looking for someone to handle weekly mowing and basic yard upkeep. Do you service our area?",
+    "received_at": "2026-06-25T19:15:00-05:00",
+    "thread_context": ""
+  }
+]
