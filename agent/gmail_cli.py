@@ -89,8 +89,18 @@ def cmd_scan_outbox(args: argparse.Namespace) -> int:
         email = get_account_email()
         print(f"Connected as {email}")
         print(f"Scanning sent mail (max={args.max})...")
+        if args.after or args.before or args.days:
+            print(
+                f"Date filter: after={args.after or 'any'}, "
+                f"before={args.before or 'any'}, days={args.days or 'n/a'}"
+            )
 
-        sent = fetch_sent_messages(max_results=args.max)
+        sent = fetch_sent_messages(
+            max_results=args.max,
+            after_date=args.after,
+            before_date=args.before,
+            newer_than_days=args.days,
+        )
         if not sent:
             print("No suitable sent messages found.")
             return 0
@@ -145,6 +155,19 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     outbox_parser.add_argument(
         "--max", type=int, default=50, help="Max sent messages to scan (default: 50)"
+    )
+    outbox_parser.add_argument(
+        "--after",
+        help="Only sent mail on or after this date (YYYY-MM-DD, e.g. 2024-01-01)",
+    )
+    outbox_parser.add_argument(
+        "--before",
+        help="Only sent mail before this date (YYYY-MM-DD, e.g. 2025-01-01)",
+    )
+    outbox_parser.add_argument(
+        "--days",
+        type=int,
+        help="Only sent mail from the last N days (alternative to --after)",
     )
     outbox_parser.add_argument(
         "--output",

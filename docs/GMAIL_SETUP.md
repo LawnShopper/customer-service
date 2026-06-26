@@ -67,6 +67,12 @@ This saves examples to `data/tone_examples.json`. The triage agent uses these au
 ```bash
 # Scan more sent messages
 python -m agent.gmail scan-outbox --max 100
+
+# Sent mail from a date range
+python -m agent.gmail scan-outbox --after 2024-01-01 --before 2025-01-01
+
+# Sent mail from the last 90 days
+python -m agent.gmail scan-outbox --days 90
 ```
 
 ## Recommended workflow

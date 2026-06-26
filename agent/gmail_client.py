@@ -201,7 +201,37 @@ def _gmail_message_to_incoming(service, message: dict) -> Optional[IncomingMessa
     )
 
 
-def list_messages(
+def _gmail_date(date_str: str) -> str:
+    """Convert YYYY-MM-DD to Gmail search format (YYYY/MM/DD)."""
+    from datetime import datetime
+
+    try:
+        parsed = datetime.strptime(date_str.strip(), "%Y-%m-%d")
+    except ValueError as exc:
+        raise GmailError(
+            f"Invalid date '{date_str}'. Use YYYY-MM-DD (example: 2024-06-01)."
+        ) from exc
+    return f"{parsed.year}/{parsed.month}/{parsed.day}"
+
+
+def _build_sent_query(
+    after_date: Optional[str] = None,
+    before_date: Optional[str] = None,
+    newer_than_days: Optional[int] = None,
+) -> str:
+    """Build a Gmail search query for sent mail with optional date filters."""
+    query_parts = ["in:sent"]
+
+    if after_date:
+        query_parts.append(f"after:{_gmail_date(after_date)}")
+    if before_date:
+        query_parts.append(f"before:{_gmail_date(before_date)}")
+    if newer_than_days and not after_date:
+        query_parts.append(f"newer_than:{newer_than_days}d")
+
+    return " ".join(query_parts)
+
+
     query: str,
     max_results: int = 20,
 ) -> list[dict]:
@@ -249,14 +279,25 @@ def fetch_inbox_messages(
     return messages
 
 
-def fetch_sent_messages(max_results: int = 50) -> list[dict]:
+def fetch_sent_messages(
+    max_results: int = 50,
+    after_date: Optional[str] = None,
+    before_date: Optional[str] = None,
+    newer_than_days: Optional[int] = None,
+) -> list[dict]:
     """
     Fetch sent messages from the outbox for tone-example scanning.
+
+    Date filters (optional):
+      - after_date: YYYY-MM-DD, emails sent on or after this date
+      - before_date: YYYY-MM-DD, emails sent before this date
+      - newer_than_days: shorthand for recent mail (e.g. 90 = last 90 days)
 
     Returns lightweight dicts with subject, body, and sent date.
     """
     service = get_gmail_service()
-    listed = list_messages(query="in:sent", max_results=max_results)
+    query = _build_sent_query(after_date, before_date, newer_than_days)
+    listed = list_messages(query=query, max_results=max_results)
 
     sent_messages = []
     for item in listed:
