@@ -232,6 +232,7 @@ def _build_sent_query(
     return " ".join(query_parts)
 
 
+def list_messages(
     query: str,
     max_results: int = 20,
 ) -> list[dict]:
