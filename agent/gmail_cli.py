@@ -58,6 +58,15 @@ def cmd_inbox(args: argparse.Namespace) -> int:
             return 0
 
         print(f"Found {len(messages)} message(s). Running triage...\n")
+
+        from agent.config import get_settings
+
+        if not get_settings().openai_api_key:
+            print(
+                "Note: Using rule-based classification (no OPENAI_API_KEY set).\n"
+                "Add your API key to .env for smarter triage.\n"
+            )
+
         results = triage_messages(messages)
         paths = save_results(results, args.output)
 

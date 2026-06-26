@@ -5,6 +5,7 @@ This lets you test the full pipeline locally without calling the API.
 Once you add your API key, the OpenAI-powered triage in triage.py takes over.
 """
 
+from agent.config import load_business_config
 from agent.models import IncomingMessage, TriageResult
 
 
@@ -12,32 +13,128 @@ def _text(message: IncomingMessage) -> str:
     return f"{message.subject} {message.body} {message.from_email}".lower()
 
 
+def _no_response_config() -> dict:
+    return load_business_config().get("no_response", {})
+
+
+def _is_automated_sender(message: IncomingMessage) -> bool:
+    config = _no_response_config()
+    email = message.from_email.lower()
+    name = message.from_name.lower()
+
+    for domain in config.get("sender_domains", []):
+        if domain.lower() in email:
+            return True
+
+    for keyword in config.get("sender_keywords", []):
+        if keyword.lower() in email or keyword.lower() in name:
+            return True
+
+    return False
+
+
+def _is_payment_notification(text: str) -> bool:
+    """Payment received alerts — not customer billing questions."""
+    notification_phrases = [
+        "you received a payment",
+        "payment was successful",
+        "payment has been processed",
+        "invoice was paid",
+        "payment of $",
+        "payment received",
+        "successfully charged",
+    ]
+    customer_question_phrases = [
+        "charged twice",
+        "wrong charge",
+        "billing question",
+        "why was i charged",
+        "refund",
+        "dispute",
+        "can someone look",
+        "what's going on",
+    ]
+
+    if any(phrase in text for phrase in customer_question_phrases):
+        return False
+
+    return any(phrase in text for phrase in notification_phrases)
+
+
+def _looks_like_customer_request(text: str) -> bool:
+    """True if the message reads like a person asking for help."""
+    request_phrases = [
+        "can you",
+        "could you",
+        "please",
+        "question",
+        "quote",
+        "schedule",
+        "mowing",
+        "lawn",
+        "help",
+        "looking for",
+        "interested in",
+    ]
+    return "?" in text or any(phrase in text for phrase in request_phrases)
+
+
+def _is_no_response_message(message: IncomingMessage) -> tuple[bool, str]:
+    """Return (True, category) if this message should not get a reply."""
+    text = _text(message)
+    config = _no_response_config()
+
+    if _is_complaint(text) and not _is_automated_sender(message):
+        return False, ""
+
+    if _is_automated_sender(message):
+        if _is_payment_notification(text):
+            return True, "System notification"
+
+        automated_phrases = [
+            "notification",
+            "alert",
+            "webhook",
+            "deploy",
+            "build failed",
+            "run succeeded",
+            "verification",
+            "confirm your email",
+            "receipt for",
+            "subscription",
+            "new login",
+            "security alert",
+        ]
+        if any(phrase in text for phrase in automated_phrases):
+            return True, "System notification"
+
+        if "?" not in message.body and not _looks_like_customer_request(text):
+            return True, "System notification"
+
+    for phrase in config.get("body_phrases", []):
+        if phrase.lower() in text:
+            if "unsubscribe" in phrase or "grow your" in phrase:
+                return True, "Spam / solicitation"
+            return True, "System notification"
+
+    if "thanks" in text and "?" not in message.body and len(message.body.split()) < 30:
+        return True, "Thank-you / no action"
+
+    return False, ""
+
+
+def _is_complaint(text: str) -> bool:
+    config = _no_response_config()
+    return any(phrase.lower() in text for phrase in config.get("complaint_phrases", []))
+
+
 def triage_with_rules(message: IncomingMessage) -> TriageResult:
-    """Classify a message using simple keyword rules."""
+    """Classify a message using keyword and sender rules."""
     text = _text(message)
     sender = message.from_name or message.from_email or "Unknown sender"
 
-    # Does Not Need Response patterns
-    if any(
-        phrase in text
-        for phrase in [
-            "out of office",
-            "auto-reply",
-            "delivery status notification",
-            "mailer-daemon",
-            "wasn't delivered",
-            "grow your lawn care",
-            "book a free demo",
-            "seo package",
-        ]
-    ):
-        category = (
-            "Spam / solicitation"
-            if "seo" in text or "demo" in text or "grow your" in text
-            else "System notification"
-        )
-        if "mailer-daemon" in text or "wasn't delivered" in text:
-            category = "System notification"
+    skip, category = _is_no_response_message(message)
+    if skip:
         return TriageResult(
             message_id=message.id,
             sender=sender,
@@ -45,28 +142,13 @@ def triage_with_rules(message: IncomingMessage) -> TriageResult:
             category=category,
             urgency="Low",
             summary=_summarize_no_response(message, category),
-            reasoning="Matches a no-response pattern (auto-reply, bounce, spam, or system alert).",
+            reasoning=_no_response_reasoning(message, category),
             missing_info=[],
             draft_reply="",
             recommended_human_action="No response needed. Log only.",
         )
 
-    if "thanks" in text and "?" not in message.body and len(message.body.split()) < 30:
-        return TriageResult(
-            message_id=message.id,
-            sender=sender,
-            classification="Does Not Need Response",
-            category="Thank-you / no action",
-            urgency="Low",
-            summary="Customer sent a brief thank-you with no question or request.",
-            reasoning="Simple thank-you with no ask — no reply needed.",
-            missing_info=[],
-            draft_reply="",
-            recommended_human_action="No response needed. Log only.",
-        )
-
-    # Needs Response — determine category and urgency
-    category, urgency = _categorize(text)
+    category, urgency = _categorize(text, message)
     missing = _missing_info(text, category)
 
     return TriageResult(
@@ -76,21 +158,38 @@ def triage_with_rules(message: IncomingMessage) -> TriageResult:
         category=category,
         urgency=urgency,
         summary=_summarize_needs_response(message, category),
-        reasoning=f"Customer message matches '{category}' and requires a human-reviewed reply.",
+        reasoning=f"Customer message requires a human-reviewed reply ({category}, {urgency} urgency).",
         missing_info=missing,
         draft_reply=_draft_reply(message, category, missing),
         recommended_human_action="Review and send reply.",
     )
 
 
-def _categorize(text: str) -> tuple[str, str]:
-    if any(w in text for w in ["charged twice", "billing", "payment", "invoice"]):
-        return "Billing / payment", "High"
+def _categorize(text: str, message: IncomingMessage) -> tuple[str, str]:
+    # Complaints first — reputation-sensitive, always high
+    if _is_complaint(text):
+        return "Service issue / complaint", "High"
+
     if any(w in text for w in ["missed", "didn't show", "nobody showed", "second time"]):
         return "Service issue / complaint", "High"
     if any(w in text for w in ["damage", "broken", "ruined"]):
         return "Service issue / complaint", "High"
-    if any(w in text for w in ["cancel", "stop service", "unhappy"]):
+
+    # Customer-initiated billing issues only (not payment notifications)
+    if any(
+        w in text
+        for w in [
+            "charged twice",
+            "wrong charge",
+            "billing question",
+            "why was i charged",
+            "refund",
+            "dispute",
+        ]
+    ):
+        return "Billing / payment", "High"
+
+    if any(w in text for w in ["cancel", "stop service", "threaten"]):
         return "Cancellation / pause", "High"
     if any(w in text for w in ["what time", "when will", "coming tomorrow", "arrival"]):
         return "Scheduling", "High"
@@ -106,7 +205,24 @@ def _categorize(text: str) -> tuple[str, str]:
         return "New customer inquiry", "Medium"
     if any(w in text for w in ["mulch", "cleanup", "fall", "spring", "seasonal"]):
         return "Seasonal service", "Low"
+
+    # Generic billing word alone — only high if from a real person, not automated
+    if any(w in text for w in ["billing", "payment", "invoice"]):
+        if _is_automated_sender(message):
+            return "System notification", "Low"
+        return "Billing / payment", "Medium"
+
     return "Existing customer question", "Medium"
+
+
+def _no_response_reasoning(message: IncomingMessage, category: str) -> str:
+    if category == "Thank-you / no action":
+        return "Simple thank-you with no ask — no reply needed."
+    if category == "Spam / solicitation":
+        return "Unsolicited or marketing message — no reply needed."
+    if _is_automated_sender(message):
+        return "Automated sender or system notification — log only, no reply needed."
+    return "System or automated message requiring no reply."
 
 
 def _missing_info(text: str, category: str) -> list[str]:
@@ -128,6 +244,8 @@ def _summarize_no_response(message: IncomingMessage, category: str) -> str:
         return "Customer said thanks with no follow-up question."
     if category == "Spam / solicitation":
         return "Unsolicited marketing email."
+    if _is_payment_notification(_text(message)):
+        return "Automated payment received notification."
     return "System or automated message requiring no reply."
 
 

@@ -57,13 +57,21 @@ Direct questions, quote requests, scheduling, service issues, service changes, b
 ### Does Not Need Response examples
 Simple thank-you with no ask, auto-replies, bounces, spam, notifications requiring no action, duplicates already handled, completed payment notifications, system alerts to log only, FYI messages clearly needing no reply.
 
+**Important distinctions:**
+- "You received a $175 payment" from HubSpot/Stripe = Does Not Need Response (log the payment, no reply)
+- "I was charged twice" from a customer = Needs Response, High urgency
+- GitHub/Cursor/Zapier/Resend deployment or webhook alerts = Does Not Need Response
+- Customer says "dissatisfied", "disappointed", "poor quality" = Needs Response, High urgency (complaint)
+
 ## Categories (pick exactly one)
 {json.dumps(CATEGORIES)}
 
 ## Urgency
-- High: angry customer, missed service, damage claim, billing issue, same-day scheduling, cancellation threat, storm-related urgent request, reputation-sensitive or time-sensitive items.
-- Medium: quote requests, scheduling questions, service changes, follow-ups, photos for active jobs.
+- High: angry or dissatisfied customer, complaints about quality, missed service, damage claim, customer billing dispute or question, same-day scheduling, cancellation threat, storm-related urgent request, reputation-sensitive items.
+- Medium: quote requests, scheduling questions, service changes, follow-ups, photos for active jobs, general customer questions.
 - Low: general questions, future project ideas, thank-you messages, non-urgent seasonal requests.
+
+**Do NOT assign High urgency to automated payment-received notifications or system alerts. Those should be Does Not Need Response with Low urgency.**
 
 ## Draft Reply Rules (only when classification is "Needs Response")
 - Be concise, warm but not chatty.

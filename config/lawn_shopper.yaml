@@ -65,3 +65,50 @@ safety_rules:
   - Do not handle angry customers autonomously
   - Do not make legal, insurance, or damage-related commitments
   - When uncertain about classification, default to Needs Response
+
+# Senders and patterns that usually need no reply (log only).
+# Customize for Lawn Shopper's inbox over time.
+no_response:
+  sender_domains:
+    - hubspot.com
+    - stripe.com
+    - resend.dev
+    - zapier.com
+    - cursor.com
+    - github.com
+    - google.com
+  sender_keywords:
+    - noreply
+    - no-reply
+    - donotreply
+    - notifications@
+    - mailer-daemon
+    - cursor[bot]
+    - hubspot
+    - stripe
+    - zapier
+    - resend
+  body_phrases:
+    - you received a payment
+    - payment was successful
+    - invoice was paid
+    - your payment has been processed
+    - out of office
+    - auto-reply
+    - delivery status notification
+    - wasn't delivered
+    - unsubscribe
+    - do not reply
+  # Real customers complaining — always Needs Response, usually High urgency
+  complaint_phrases:
+    - dissatisfied
+    - disappointed
+    - unhappy
+    - not satisfied
+    - poor quality
+    - terrible job
+    - complaint
+    - frustrated
+    - unacceptable
+    - not happy with
+    - wholly dissatisfied
