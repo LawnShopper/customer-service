@@ -16,6 +16,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import List, Optional
 
 from agent.config import get_settings, resolve_path
 from agent.models import IncomingMessage
@@ -48,7 +49,7 @@ def print_summary(results) -> None:
         print()
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Lawn Shopper message triage and draft reply agent"
     )

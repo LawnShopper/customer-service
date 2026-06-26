@@ -9,6 +9,7 @@ import base64
 import re
 from email.utils import parseaddr
 from pathlib import Path
+from typing import Optional
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -166,7 +167,7 @@ def _get_thread_context(service, thread_id: str, current_message_id: str) -> str
     return "\n".join(snippets[-3:])
 
 
-def _gmail_message_to_incoming(service, message: dict) -> IncomingMessage | None:
+def _gmail_message_to_incoming(service, message: dict) -> Optional[IncomingMessage]:
     """Convert a Gmail API message into our IncomingMessage model."""
     message_id = message.get("id", "")
     thread_id = message.get("threadId", "")

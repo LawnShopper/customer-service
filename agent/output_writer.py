@@ -7,12 +7,13 @@ Outputs both JSON (full detail) and CSV (easy to scan in a spreadsheet).
 import csv
 import json
 from pathlib import Path
+from typing import Dict, Union
 
 from agent.config import resolve_path
 from agent.models import TriageBatch, TriageResult
 
 
-def save_results(results: list[TriageResult], output_dir: str | Path) -> dict[str, Path]:
+def save_results(results: list, output_dir: Union[str, Path]) -> Dict[str, Path]:
     """
     Write triage results to JSON and CSV files.
 

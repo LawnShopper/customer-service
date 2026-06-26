@@ -9,6 +9,7 @@ Usage:
 
 import argparse
 import sys
+from typing import List, Optional
 
 from agent.gmail_client import (
     GmailError,
@@ -111,7 +112,7 @@ def cmd_scan_outbox(args: argparse.Namespace) -> int:
         return 1
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     from agent.config import get_settings
 
     settings = get_settings()

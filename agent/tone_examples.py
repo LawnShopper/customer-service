@@ -7,13 +7,14 @@ match Lawn Shopper's real voice.
 
 import json
 from datetime import datetime, timezone
+from typing import List, Optional
 
 from agent.config import resolve_path
 
 DEFAULT_TONE_PATH = "data/tone_examples.json"
 
 
-def load_tone_examples(path: str | None = None) -> list[str]:
+def load_tone_examples(path: Optional[str] = None) -> List[str]:
     """
     Return a list of example reply snippets for the triage prompt.
 
@@ -40,8 +41,8 @@ def load_tone_examples(path: str | None = None) -> list[str]:
 
 
 def save_tone_examples(
-    sent_messages: list[dict],
-    path: str | None = None,
+    sent_messages: list,
+    path: Optional[str] = None,
     account_email: str = "",
 ) -> dict:
     """
