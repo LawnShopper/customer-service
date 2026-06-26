@@ -79,8 +79,10 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     print_summary(results)
     print("Output saved to:")
-    print(f"  JSON: {paths['json']}")
     print(f"  CSV:  {paths['csv']}")
+    print(f"  JSON: {paths['json']}")
+    if paths.get("stamped_csv"):
+        print(f"  New copy: {paths['stamped_csv']}")
 
     return 0
 

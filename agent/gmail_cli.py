@@ -55,6 +55,8 @@ def cmd_inbox(args: argparse.Namespace) -> int:
 
         if not messages:
             print("No messages found matching your filters.")
+            print("Tip: your inbox may have no unread mail. Try:")
+            print("  python3 -m agent.gmail inbox --all")
             return 0
 
         print(f"Found {len(messages)} message(s). Running triage...\n")
@@ -83,8 +85,9 @@ def cmd_inbox(args: argparse.Namespace) -> int:
             print()
 
         print("Output saved to:")
-        print(f"  JSON: {paths['json']}")
         print(f"  CSV:  {paths['csv']}")
+        print(f"  JSON: {paths['json']}")
+        print(f"  New copy: {paths['stamped_csv']}")
         return 0
 
     except GmailError as exc:
