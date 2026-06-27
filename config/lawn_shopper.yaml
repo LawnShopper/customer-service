@@ -1,0 +1,114 @@
+business:
+  name: Lawn Shopper
+  description: >
+    A local lawn care and landscaping brokerage serving the Chicago North Shore
+    and northwest suburbs, including Deerfield, Lake Forest, Highland Park,
+    Northbrook, Glenview, Winnetka, Wilmette, Evanston, and nearby communities.
+    Lawn Shopper coordinates between homeowners and vetted local crews — handling
+    intake, communication, quotes, scheduling, follow-up, payment coordination,
+    and issue resolution.
+  services:
+    - Weekly mowing
+    - Spring cleanups
+    - Fall cleanups
+    - Mulch
+    - Trimming
+    - Yard refreshes
+    - Seasonal landscaping work
+
+tone:
+  style: practical, friendly, direct, and helpful
+  feel: responsive local operator — not a corporate call center or slick tech startup
+  good_examples:
+    - "Thanks — we can take a look. Please send over your address and a couple photos of the area, and we'll let you know the best next step."
+    - "Got it. I'll check with the crew and follow up as soon as I have an update."
+    - "Thanks for flagging. I'm going to look into this and get it cleaned up."
+  avoid:
+    - "Dear valued customer"
+    - "We sincerely apologize for any inconvenience this may have caused"
+    - Long robotic explanations
+    - Salesy language
+    - Excessive enthusiasm
+    - Overly polished corporate phrasing
+    - Emoji
+    - Technical jargon
+
+categories:
+  - New customer inquiry
+  - Existing customer question
+  - Quote request
+  - Scheduling
+  - Service change
+  - Service issue / complaint
+  - Billing / payment
+  - Photos received
+  - Crew coordination
+  - Seasonal service
+  - Cancellation / pause
+  - Thank-you / no action
+  - Spam / solicitation
+  - System notification
+  - Other / unclear
+
+urgency_levels:
+  - High
+  - Medium
+  - Low
+
+safety_rules:
+  - Do not send emails or texts automatically
+  - Do not delete or archive messages
+  - Do not modify customer records without approval
+  - Do not promise specific service dates unless confirmed
+  - Do not quote prices unless pricing is provided by a human
+  - Do not admit fault or offer refunds without human review
+  - Do not handle angry customers autonomously
+  - Do not make legal, insurance, or damage-related commitments
+  - When uncertain about classification, default to Needs Response
+
+# Senders and patterns that usually need no reply (log only).
+# Customize for Lawn Shopper's inbox over time.
+no_response:
+  sender_domains:
+    - hubspot.com
+    - stripe.com
+    - resend.dev
+    - zapier.com
+    - cursor.com
+    - github.com
+    - google.com
+  sender_keywords:
+    - noreply
+    - no-reply
+    - donotreply
+    - notifications@
+    - mailer-daemon
+    - cursor[bot]
+    - hubspot
+    - stripe
+    - zapier
+    - resend
+  body_phrases:
+    - you received a payment
+    - payment was successful
+    - invoice was paid
+    - your payment has been processed
+    - out of office
+    - auto-reply
+    - delivery status notification
+    - wasn't delivered
+    - unsubscribe
+    - do not reply
+  # Real customers complaining — always Needs Response, usually High urgency
+  complaint_phrases:
+    - dissatisfied
+    - disappointed
+    - unhappy
+    - not satisfied
+    - poor quality
+    - terrible job
+    - complaint
+    - frustrated
+    - unacceptable
+    - not happy with
+    - wholly dissatisfied

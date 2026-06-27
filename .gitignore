@@ -1,0 +1,16 @@
+.env
+.env.local
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+node_modules/
+dist/
+.DS_Store
+*.log
+data/output/
+data/gmail_token.json
+data/tone_examples.json
+credentials/*.json
