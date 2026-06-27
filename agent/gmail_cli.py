@@ -18,6 +18,7 @@ from agent.gmail_client import (
     get_account_email,
     get_credentials,
 )
+from agent.config import get_settings, resolve_path
 from agent.output_writer import save_results
 from agent.tone_examples import save_tone_examples
 from agent.triage import triage_messages
@@ -61,7 +62,8 @@ def cmd_inbox(args: argparse.Namespace) -> int:
 
         print(f"Found {len(messages)} message(s). Running triage...\n")
 
-        from agent.config import get_settings
+        output_path = resolve_path(args.output)
+        print(f"Results will be saved to: {output_path}\n", flush=True)
 
         if not get_settings().openai_api_key:
             print(
@@ -71,6 +73,11 @@ def cmd_inbox(args: argparse.Namespace) -> int:
 
         results = triage_messages(messages)
         paths = save_results(results, args.output)
+
+        from datetime import datetime
+
+        csv_mtime = datetime.fromtimestamp(paths["csv"].stat().st_mtime)
+        print(f"\nCSV file updated on disk at: {csv_mtime}", flush=True)
 
         needs_response = sum(1 for r in results if r.classification == "Needs Response")
         print(f"Processed {len(results)} message(s) — {needs_response} need a response\n")
@@ -87,11 +94,16 @@ def cmd_inbox(args: argparse.Namespace) -> int:
         print("Output saved to:")
         print(f"  CSV:  {paths['csv']}")
         print(f"  JSON: {paths['json']}")
-        print(f"  New copy: {paths['stamped_csv']}")
+        if paths.get("stamped_csv"):
+            print(f"  New copy: {paths['stamped_csv']}")
         return 0
 
     except GmailError as exc:
         print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:
+        print(f"\nRun failed before saving results: {exc}", file=sys.stderr)
+        print("Scroll up for the full error message.", file=sys.stderr)
         return 1
 
 

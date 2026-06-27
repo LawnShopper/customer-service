@@ -127,8 +127,7 @@ def triage_message(message: IncomingMessage) -> TriageResult:
     """
     Classify one message and draft a reply if needed.
 
-  Falls back to a safe default if the API key is missing or the model
-  returns invalid JSON.
+    Falls back to rules if the API key is missing or the API call fails.
     """
     settings = get_settings()
     sender_label = message.from_name or message.from_email or "Unknown sender"
@@ -136,19 +135,23 @@ def triage_message(message: IncomingMessage) -> TriageResult:
     if not settings.openai_api_key:
         return triage_with_rules(message)
 
-    client = OpenAI(api_key=settings.openai_api_key)
-    response = client.chat.completions.create(
-        model=settings.openai_model,
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": build_system_prompt()},
-            {
-                "role": "user",
-                "content": format_message_for_model(message),
-            },
-        ],
-        temperature=0.2,
-    )
+    try:
+        client = OpenAI(api_key=settings.openai_api_key)
+        response = client.chat.completions.create(
+            model=settings.openai_model,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": build_system_prompt()},
+                {
+                    "role": "user",
+                    "content": format_message_for_model(message),
+                },
+            ],
+            temperature=0.2,
+        )
+    except Exception as exc:
+        print(f"  OpenAI error for {message.id}, using rules: {exc}", flush=True)
+        return triage_with_rules(message)
 
     raw = response.choices[0].message.content or "{}"
 
@@ -184,8 +187,14 @@ def triage_message(message: IncomingMessage) -> TriageResult:
 
 
 def triage_messages(messages: list[IncomingMessage]) -> list[TriageResult]:
-    """Process a list of messages in order."""
-    return [triage_message(message) for message in messages]
+    """Process a list of messages in order, with progress output."""
+    results = []
+    total = len(messages)
+    for index, message in enumerate(messages, start=1):
+        subject = (message.subject or message.body or "")[:60]
+        print(f"  [{index}/{total}] {subject}...", flush=True)
+        results.append(triage_message(message))
+    return results
 
 
 def count_needs_response(results: list[TriageResult]) -> int:
